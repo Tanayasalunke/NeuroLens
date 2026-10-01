@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroLens — Digital Cognitive Twin & Live Interactive Sandbox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0A0E27;
+            --card-bg: rgba(16, 23, 56, 0.7);
+            --border-glow: rgba(0, 245, 255, 0.25);
+            --cyan: #00F5FF;
+            --violet: #B026FF;
+            --pink: #FF007F;
+            --text-main: #E2E8F0;
+            --text-muted: #94A3B8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 245, 255, 0.07) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(176, 38, 255, 0.07) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* Top Banner */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-title h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.2rem;
+        }
+
+        /* View Mode Toggle Switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            padding: 0.4rem;
+            border-radius: 30px;
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            color: #FFF;
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+        }
+
+        /* Disclaimer Banner */
+        .disclaimer-banner {
+            background: rgba(255, 0, 127, 0.12);
+            border: 1px solid rgba(255, 0, 127, 0.4);
+            color: #FF80BF;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        /* Profile Top Info Grid */
+        .profile-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            padding: 1.2rem;
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #FFF;
+            margin-top: 0.3rem;
+        }
+
+        /* Main Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 1.8rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .chart-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            color: var(--cyan);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        /* LLM Narrative Styling */
+        .narrative-box {
+            background: rgba(0, 245, 255, 0.05);
+            border-left: 4px solid var(--cyan);
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #E2E8F0;
+        }
+
+        /* Sandbox Controls */
+        .sandbox-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .slider-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .slider-group input[type=range] {
+            accent-color: var(--cyan);
+        }
+
+        .sensor-checkboxes {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.8rem;
+        }
+
+        .checkbox-label {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .predict-btn {
+            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1.2rem;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .predict-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Mode-specific visibilities */
+        .clinician-only { display: block; }
+        .parent-only { display: none; }
+
+        body.parent-mode .clinician-only { display: none; }
+        body.parent-mode .parent-only { display: block; }
+    </style>
+</head>
+<body class="parent-mode">
+
+    <header>
+        <div class="header-title">
+            <h1>NeuroLens — Digital Cognitive Twin</h1>
+            <p>Multimodal Cognitive Profile, Interactive Sandbox & 6-Month Forecast</p>
+        </div>
+
+        <div class="toggle-container">
+            <button class="toggle-btn active" id="btn-parent" onclick="setMode('parent')">👨‍👩‍👧 Parent / Teacher Mode</button>
+            <button class="toggle-btn" id="btn-clinician" onclick="setMode('clinician')">🔬 Clinician Mode & Sandbox</button>
+        </div>
+    </header>
+
+    <div class="disclaimer-banner">
+        ⚠️ <strong>ETHICAL DISCLAIMER:</strong> NeuroLens is an early explainable screening tool designed to assist educators & clinicians. It is NOT a definitive medical or clinical diagnosis.
+    </div>
+
+    <div class="profile-bar">
+        <div class="info-card">
+            <div class="info-label">Child Name</div>
+            <div class="info-value" id="val-name">Leo Parker</div>
+        </div>
+        <div class="info-card">
+            <div class="info-label">Age / Grade</div>
+            <div class="info-value" id="val-age">8 Yrs (3rd Grade)</div>
+        </div>
+        <div class="info-card">
+            <div class="info-label">Primary Flag</div>
+            <div class="info-value" style="color: var(--cyan);" id="val-flag">Dysgraphia & Dyslexia</div>
+        </div>
+        <div class="info-card">
+            <div class="info-label">Forecast Efficacy</div>
+            <div class="info-value" style="color: #38BDF8;" id="val-status">📈 84.5% Efficacy</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- 4-Axis Cognitive Risk Radar Chart -->
+        <div class="chart-card">
+            <h3>📊 Multimodal Risk & Severity Profile</h3>
+            <canvas id="radarChart"></canvas>
+        </div>
+
+        <!-- Longitudinal Drift & 6-Month Forecast -->
+        <div class="chart-card">
+            <h3>📈 6-Month Longitudinal Drift & Forecast</h3>
+            <canvas id="driftChart"></canvas>
+        </div>
+
+        <!-- Interactive Live Simulation Sandbox (Clinician Mode) -->
+        <div class="chart-card full-width clinician-only">
+            <h3>🎛️ Interactive Real-Time Biometric Sandbox (PyTorch Live Model)</h3>
+            <div class="sandbox-controls">
+                <div class="slider-group">
+                    <label>Eye Gaze Fixation Duration: <b id="lbl-fixation">650 ms</b></label>
+                    <input type="range" id="slider-fixation" min="200" max="900" value="650" oninput="updateSliders()">
+                </div>
+                <div class="slider-group">
+                    <label>Stylus Pen Tremor Index: <b id="lbl-tremor">0.45</b></label>
+                    <input type="range" id="slider-tremor" min="0" max="1" step="0.05" value="0.45" oninput="updateSliders()">
+                </div>
+                <div class="slider-group">
+                    <label>Read-Aloud Speech Pause Ratio: <b id="lbl-pause">0.38</b></label>
+                    <input type="range" id="slider-pause" min="0" max="0.8" step="0.02" value="0.38" oninput="updateSliders()">
+                </div>
+                <div class="slider-group">
+                    <label>EEG Theta/Beta Ratio (TBR): <b id="lbl-tbr">4.2</b></label>
+                    <input type="range" id="slider-tbr" min="1" max="8" step="0.1" value="4.2" oninput="updateSliders()">
+                </div>
+            </div>
+
+            <div class="sensor-checkboxes">
+                <label class="checkbox-label"><input type="checkbox" id="chk-gaze" checked> Gaze Sensor</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-hw" checked> Stylus HW Sensor</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-speech" checked> Speech Sensor</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-draw" checked> Drawing Sensor</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-eeg" checked> EEG Brain Sensor</label>
+            </div>
+
+            <button class="predict-btn" onclick="runLivePredict()">⚡ Run Live PyTorch Model Inference</button>
+        </div>
+
+        <!-- LLM Plain-English Diagnostic Narrative -->
+        <div class="chart-card full-width">
+            <h3>🤖 LLM Diagnostic Narrative & Recommendations</h3>
+            <div class="narrative-box" id="narrative-text">
+                Loading live diagnostic insights from PyTorch backend...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let radarChart, driftChart;
+
+        function setMode(mode) {
+            document.body.className = mode + '-mode';
+            document.getElementById('btn-parent').classList.toggle('active', mode === 'parent');
+            document.getElementById('btn-clinician').classList.toggle('active', mode === 'clinician');
+        }
+
+        function updateSliders() {
+            document.getElementById('lbl-fixation').innerText = document.getElementById('slider-fixation').value + ' ms';
+            document.getElementById('lbl-tremor').innerText = document.getElementById('slider-tremor').value;
+            document.getElementById('lbl-pause').innerText = document.getElementById('slider-pause').value;
+            document.getElementById('lbl-tbr').innerText = document.getElementById('slider-tbr').value;
+        }
+
+        function initCharts(data) {
+            const ctxRadar = document.getElementById('radarChart').getContext('2d');
+            radarChart = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Dyslexia', 'Dysgraphia', 'Dyscalculia', 'ADHD Reading'],
+                    datasets: [{
+                        label: 'Risk Classification Probability',
+                        data: [data.risk_scores.dyslexia, data.risk_scores.dysgraphia, data.risk_scores.dyscalculia, data.risk_scores.adhd_reading],
+                        backgroundColor: 'rgba(0, 245, 255, 0.25)',
+                        borderColor: '#00F5FF',
+                        borderWidth: 2
+                    }, {
+                        label: 'Continuous Severity Index',
+                        data: [data.severity_indices.dyslexia, data.severity_indices.dysgraphia, data.severity_indices.dyscalculia, data.severity_indices.adhd_reading],
+                        backgroundColor: 'rgba(176, 38, 255, 0.25)',
+                        borderColor: '#B026FF',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: { r: { min: 0, max: 1, ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.1)' } } },
+                    plugins: { legend: { labels: { color: '#E2E8F0' } } }
+                }
+            });
+
+            const ctxDrift = document.getElementById('driftChart').getContext('2d');
+            const trajs = data.longitudinal_trajectory || [];
+            driftChart = new Chart(ctxDrift, {
+                type: 'line',
+                data: {
+                    labels: trajs.map(t => t.session),
+                    datasets: [
+                        { label: 'Dyslexia Drift', data: trajs.map(t => t.dyslexia), borderColor: '#00F5FF', tension: 0.3 },
+                        { label: 'Dysgraphia Drift', data: trajs.map(t => t.dysgraphia), borderColor: '#B026FF', tension: 0.3 },
+                        { label: 'ADHD Drift', data: trajs.map(t => t.adhd), borderColor: '#FF007F', tension: 0.3 }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: { min: 0, max: 1, ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        x: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    },
+                    plugins: { legend: { labels: { color: '#E2E8F0' } } }
+                }
+            });
+        }
+
+        async function fetchChildProfile() {
+            try {
+                const res = await fetch('http://localhost:5001/api/child_profile');
+                const data = await res.json();
+                document.getElementById('narrative-text').innerText = data.llm_narrative;
+                document.getElementById('val-status').innerText = '📈 ' + (data.forecast_efficacy || 84.5) + '% Efficacy';
+                initCharts(data);
+            } catch(e) {
+                console.warn('API server offline. Using static profile.', e);
+                initCharts({
+                    risk_scores: { dyslexia: 0.82, dysgraphia: 0.88, dyscalculia: 0.21, adhd_reading: 0.65 },
+                    severity_indices: { dyslexia: 0.74, dysgraphia: 0.82, dyscalculia: 0.15, adhd_reading: 0.58 },
+                    longitudinal_trajectory: [
+                        { session: "Session 1", dyslexia: 0.82, dysgraphia: 0.78, adhd: 0.65 },
+                        { session: "Session 2", dyslexia: 0.74, dysgraphia: 0.68, adhd: 0.58 },
+                        { session: "Session 3", dyslexia: 0.61, dysgraphia: 0.55, adhd: 0.45 },
+                        { session: "Session 4", dyslexia: 0.52, dysgraphia: 0.48, adhd: 0.38 },
+                        { session: "Forecast +3M", dyslexia: 0.38, dysgraphia: 0.35, adhd: 0.28 },
+                        { session: "Forecast +6M", dyslexia: 0.25, dysgraphia: 0.22, adhd: 0.18 }
+                    ]
+                });
+                document.getElementById('narrative-text').innerText = "Leo demonstrates significant phonological reading hesitations (long gaze fixations of 650ms) and fine-motor stylus pen pressure oscillations during Maze Tracer. Recommend structured reading & motor exercises.";
+            }
+        }
+
+        async function runLivePredict() {
+            const body = {
+                fixation_duration: parseFloat(document.getElementById('slider-fixation').value),
+                pen_tremor: parseFloat(document.getElementById('slider-tremor').value),
+                pause_ratio: parseFloat(document.getElementById('slider-pause').value),
+                eeg_tbr: parseFloat(document.getElementById('slider-tbr').value),
+                has_gaze: document.getElementById('chk-gaze').checked,
+                has_hw: document.getElementById('chk-hw').checked,
+                has_speech: document.getElementById('chk-speech').checked,
+                has_draw: document.getElementById('chk-draw').checked,
+                has_eeg: document.getElementById('chk-eeg').checked
+            };
+
+            try {
+                const res = await fetch('http://localhost:5001/api/live_predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                
+                // Update Radar Chart
+                radarChart.data.datasets[0].data = [data.risk_scores.dyslexia, data.risk_scores.dysgraphia, data.risk_scores.dyscalculia, data.risk_scores.adhd_reading];
+                radarChart.data.datasets[1].data = [data.severity_indices.dyslexia, data.severity_indices.dysgraphia, data.severity_indices.dyscalculia, data.severity_indices.adhd_reading];
+                radarChart.update();
+                
+                document.getElementById('narrative-text').innerText = data.live_narrative;
+            } catch(e) {
+                alert('Flask API server offline. Please start api_server.py on port 5001.');
+            }
+        }
+
+        window.onload = fetchChildProfile;
+    </script>
+</body>
+</html>

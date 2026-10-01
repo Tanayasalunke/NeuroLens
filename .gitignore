@@ -1,0 +1,22 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# OS & IDE Files
+.DS_Store
+.vscode/
+.idea/
+
+# Temporary & Log Files
+*.log
+.system_generated/
+
+# Checkpoint binaries (optional large files)
+# checkpoints/*.pt

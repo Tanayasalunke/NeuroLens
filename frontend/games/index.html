@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroLens — Gamified Biometric Assessment & Live Webcam Gaze Tracking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://webgazer.cs.brown.edu/webgazer.js?" async></script>
+    <style>
+        :root {
+            --bg-color: #0A0E27;
+            --card-bg: rgba(16, 23, 56, 0.7);
+            --border-glow: rgba(0, 245, 255, 0.3);
+            --cyan: #00F5FF;
+            --violet: #B026FF;
+            --pink: #FF007F;
+            --text-main: #E2E8F0;
+            --text-muted: #94A3B8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 245, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(176, 38, 255, 0.08) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            color: var(--text-main);
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: rgba(0, 245, 255, 0.15);
+            border-color: var(--cyan);
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+            color: #FFF;
+        }
+
+        .game-wrapper {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 900px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-panel {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-panel.active {
+            display: flex;
+        }
+
+        canvas {
+            background: #060919;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            cursor: crosshair;
+        }
+
+        .biometric-live-hud {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
+        .hud-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .hud-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.3rem;
+        }
+
+        .hud-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            border: none;
+            color: #FFF;
+            padding: 0.9rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 245, 255, 0.4);
+        }
+
+        /* Reading Passage styling */
+        .passage-box {
+            background: #060919;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 100%;
+            line-height: 1.8;
+            font-size: 1.2rem;
+            color: #CBD5E1;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .gaze-spotlight {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0, 245, 255, 0.4);
+            box-shadow: 0 0 15px var(--cyan);
+            pointer-events: none;
+            transition: all 0.1s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>NeuroLens — Biometric Mini-Games</h1>
+        <p>Silently harvesting multimodal cognitive signals through gamified interaction</p>
+    </header>
+
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchGame('letter-catch')">🎮 1. Letter Catch (Gaze & Reversals)</button>
+        <button class="tab-btn" onclick="switchGame('maze-tracer')">✍️ 2. Maze Tracer (Stylus Dynamics)</button>
+        <button class="tab-btn" onclick="switchGame('story-reader')">📖 3. Story Reader (Speech & Eye-Tracking)</button>
+    </div>
+
+    <div class="game-wrapper">
+
+        <!-- Game 1: Letter Catch -->
+        <div id="letter-catch" class="game-panel active">
+            <h2>Game 1: Letter Catch</h2>
+            <p style="color: var(--text-muted); margin-top: 0.3rem;">Press the matching key on your keyboard before letters fall! Detects letter reversals ('b' vs 'd') & reaction times.</p>
+            <canvas id="canvas-catch" width="700" height="350"></canvas>
+            
+            <div class="biometric-live-hud">
+                <div class="hud-card">
+                    <div class="hud-title">Avg Reaction Time</div>
+                    <div class="hud-value" id="hud-rt">0 ms</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-title">Reversal Errors</div>
+                    <div class="hud-value" id="hud-reversals" style="color: var(--pink);">0</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-title">Catch Accuracy</div>
+                    <div class="hud-value" id="hud-acc">100%</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-title">Score</div>
+                    <div class="hud-value" id="hud-score">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game 2: Maze Tracer -->
+        <div id="maze-tracer" class="game-panel">
+            <h2>Game 2: Maze Tracer</h2>
+            <p style="color: var(--text-muted); margin-top: 0.3rem;">Trace through the winding neon maze with your mouse or stylus without touching the walls.</p>
+            <canvas id="canvas-maze" width="700" height="350"></canvas>
+            
+            <div class="biometric-live-hud">
+                <div class="hud-card">
+                    <div class="hud-title">Stroke Velocity</div>
+                    <div class="hud-value" id="hud-vel">0 px/s</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-title">Tremor Oscillation</div>
+                    <div class="hud-value" id="hud-tremor">0.02</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-title">Off-Path Collisions</div>
+                    <div class="hud-value" id="hud-collisions" style="color: var(--pink);">0</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-title">Completion</div>
+                    <div class="hud-value" id="hud-maze-progress">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game 3: Story Reader -->
+        <div id="story-reader" class="game-panel">
+            <h2>Game 3: Story Reader</h2>
+            <p style="color: var(--text-muted); margin-top: 0.3rem;">Read the passage aloud. The system logs gaze scanpath fixations, backward regressions, and vocal pause ratios.</p>
+
+            <div class="passage-box" id="passage-container">
+                <div class="gaze-spotlight" id="gaze-dot"></div>
+                Once upon a time, a curious little fox named <b>Barnaby</b> set off on an adventure through the whispering woods. He carried a silver compass that glowed under the bright starlight. As he crossed the ancient stone bridge, he noticed mysterious footprints leading into the magical clearing.
+            </div>
+
+            <button class="action-btn" id="btn-webcam" onclick="toggleWebgazer()">📷 Enable Live Webcam Eye-Tracking (WebGazer.js)</button>
+
+            <div class="biometric-live-hud">
+                <div class="hud-card">
+                    <div class="hud-title">Fixation Duration</div>
+                    <div class="hud-value" id="hud-fix-dur">320 ms</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-title">Gaze Regressions</div>
+                    <div class="hud-value" id="hud-regress" style="color: var(--pink);">2</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-title">Pause Duration Ratio</div>
+                    <div class="hud-value" id="hud-pause">0.14</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-title">Est. Reading WPM</div>
+                    <div class="hud-value" id="hud-wpm">110</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function switchGame(gameId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(gameId).classList.add('active');
+        }
+
+        // WebGazer Live Webcam Toggle
+        let isGazerActive = false;
+        function toggleWebgazer() {
+            if (typeof webgazer === 'undefined') {
+                alert('WebGazer.js library is loading or blocked by browser policy.');
+                return;
+            }
+            if (!isGazerActive) {
+                webgazer.setGazeListener(function(data, elapsedTime) {
+                    if (data == null) return;
+                    const dot = document.getElementById('gaze-dot');
+                    if (dot) {
+                        dot.style.left = (data.x - 15) + 'px';
+                        dot.style.top = (data.y - 15) + 'px';
+                    }
+                }).begin();
+                webgazer.showPredictionPoints(true);
+                isGazerActive = true;
+                document.getElementById('btn-webcam').innerText = '🛑 Stop Webcam Eye-Tracking';
+                document.getElementById('btn-webcam').style.background = 'linear-gradient(135deg, #FF007F, #B026FF)';
+            } else {
+                webgazer.end();
+                isGazerActive = false;
+                document.getElementById('btn-webcam').innerText = '📷 Enable Live Webcam Eye-Tracking (WebGazer.js)';
+                document.getElementById('btn-webcam').style.background = 'linear-gradient(135deg, var(--cyan), var(--violet))';
+            }
+        }
+    </script>
+</body>
+</html>

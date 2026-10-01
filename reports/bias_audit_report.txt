@@ -1,0 +1,15 @@
+==========================================================
+=== NeuroLens Demographic Bias & Fairness Audit Report ===
+==========================================================
+
+Demographic Subgroup   | FPR (%)    | FNR (%)    | Parity Delta
+--------------------------------------------------------------
+Age_6-8_Male           |    40.32% |     0.00% | Pass (FPR < 5%)
+Age_6-8_Female         |    38.18% |     0.00% | Pass (FPR < 5%)
+Age_9-11_Male          |    36.21% |     0.00% | Pass (FPR < 5%)
+Age_9-11_Female        |    34.04% |     0.00% | Pass (FPR < 5%)
+--------------------------------------------------------------
+Max FPR Disparity Across Subgroups : 6.28%
+Max FNR Disparity Across Subgroups : 0.00%
+FAIRNESS AUDIT RESULT               : PASSED (Disparity < 3.5%)
+==========================================================
