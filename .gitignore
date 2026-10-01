@@ -14,9 +14,11 @@ __pycache__/
 .vscode/
 .idea/
 
+# Archive & Temporary Extraction Files
+unrar/
+unrarsrc.tar.gz
+*.rar
+
 # Temporary & Log Files
 *.log
 .system_generated/
-
-# Checkpoint binaries (optional large files)
-# checkpoints/*.pt
