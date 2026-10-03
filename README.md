@@ -285,8 +285,8 @@ PYTHONPATH=. python3 frontend/dashboard/api_server.py
 ## 📜 Team & Citation
 
 **Project Team**:
-- **Tanaya Salunke** (`23101A0074`)
-- **Rishabh Hegde** (`23101A0065`)
-- **Pritraj Chaudhary** (`23101A0060`)
+- `23101A0074`
+- `23101A0065`
+- `23101A0060`
 
 **Department of Computer Engineering**, 2025–2026.

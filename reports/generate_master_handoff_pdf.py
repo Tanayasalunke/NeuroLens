@@ -37,7 +37,7 @@ class NumberedCanvas(canvas.Canvas):
         # Header (Pages > 1)
         if self._pageNumber > 1:
             self.drawString(36, 760, "NeuroLens: Multimodal Deep Learning Framework — Master Technical Handoff Encyclopedia")
-            self.drawRightString(576, 760, "Tanaya Salunke | Rishabh Hegde | Pritraj Chaudhary")
+            self.drawRightString(576, 760, "23101A0074 | 23101A0065 | 23101A0060")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
             self.setLineWidth(0.5)
             self.line(36, 754, 576, 754)
@@ -183,10 +183,10 @@ def create_master_handoff_pdf():
 
     # Student Information Banner
     student_data = [
-        [Paragraph("Student Name", tbl_header_style), Paragraph("Roll Number", tbl_header_style), Paragraph("Department / Class", tbl_header_style)],
-        [Paragraph("<b>Tanaya Salunke</b>", tbl_cell_style), Paragraph("<b>23101A0074</b>", tbl_cell_style), Paragraph("Computer Engineering", tbl_cell_style)],
-        [Paragraph("<b>Rishabh Hegde</b>", tbl_cell_style), Paragraph("<b>23101A0065</b>", tbl_cell_style), Paragraph("Computer Engineering", tbl_cell_style)],
-        [Paragraph("<b>Pritraj Chaudhary</b>", tbl_cell_style), Paragraph("<b>23101A0060</b>", tbl_cell_style), Paragraph("Computer Engineering", tbl_cell_style)]
+        [Paragraph("Roll Number", tbl_header_style), Paragraph("Department", tbl_header_style), Paragraph("Academic Year", tbl_header_style)],
+        [Paragraph("<b>23101A0074</b>", tbl_cell_style), Paragraph("Computer Engineering", tbl_cell_style), Paragraph("2025–2026", tbl_cell_style)],
+        [Paragraph("<b>23101A0065</b>", tbl_cell_style), Paragraph("Computer Engineering", tbl_cell_style), Paragraph("2025–2026", tbl_cell_style)],
+        [Paragraph("<b>23101A0060</b>", tbl_cell_style), Paragraph("Computer Engineering", tbl_cell_style), Paragraph("2025–2026", tbl_cell_style)]
     ]
     t_stu = Table(student_data, colWidths=[2.5*inch, 2.3*inch, 2.7*inch])
     t_stu.setStyle(TableStyle([
