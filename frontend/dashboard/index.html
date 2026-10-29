@@ -368,6 +368,21 @@ body.clinician-mode .clinician-section { display: block; }
   border: 1px solid #C7D2FE; transition: all 0.2s;
 }
 .launch-games-btn:hover { background: #E0E7FF; border-color: var(--indigo); }
+
+.launch-exam-pill {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.35rem 0.85rem; border-radius: 20px;
+  background: var(--indigo-l); color: var(--indigo); border: 1.5px solid #C7D2FE;
+  font-size: 0.76rem; font-weight: 700; text-decoration: none; transition: all 0.2s;
+}
+.launch-exam-pill:hover { background: #E0E7FF; border-color: var(--indigo); transform: translateY(-1px); }
+.reset-exam-pill {
+  display: none; align-items: center; gap: 0.35rem;
+  padding: 0.35rem 0.85rem; border-radius: 20px;
+  background: #FEF2F2; color: #B91C1C; border: 1.5px solid #FECACA;
+  font-size: 0.76rem; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+}
+.reset-exam-pill:hover { background: #FEE2E2; }
 </style>
 </head>
 <body>
@@ -379,12 +394,18 @@ body.clinician-mode .clinician-section { display: block; }
   </button>
   <div class="nav-brand"><span>🧠</span> NeuroLens</div>
   <div class="nav-center">
-    <div class="patient-chip">
+    <div class="patient-chip" id="patient-chip-box">
       <div class="dot"></div>
       <span id="nav-patient">Leo Parker &nbsp;·&nbsp; Age 8 &nbsp;·&nbsp; 3rd Grade</span>
     </div>
   </div>
   <div class="nav-actions">
+    <a href="games/index.html?mode=exam" class="launch-exam-pill" title="Start live interactive screening exam">
+      <span>🎮</span> Live Patient Exam
+    </a>
+    <button id="btn-top-reset" onclick="removePatientAssessment()" class="reset-exam-pill" title="Clear patient assessment and reset to baseline">
+      <span>🗑️</span> Remove Assessment
+    </button>
     <div class="api-badge offline" id="api-badge">
       <div class="dot"></div>
       <span id="api-badge-text">Connecting…</span>
@@ -407,7 +428,8 @@ body.clinician-mode .clinician-section { display: block; }
     <button class="nav-link" onclick="navigateToSection('section-forecast')"><span class="icon">📈</span> 6-Month Forecast</button>
     <button class="nav-link" onclick="navigateToSection('section-conformal')"><span class="icon">🛡</span> Conformal Decision</button>
     <button class="nav-link" onclick="navigateToSection('section-narrative')"><span class="icon">📝</span> AI Report</button>
-    <a href="games/index.html" target="_blank" class="nav-link" style="margin-top:0.3rem;"><span class="icon">🎮</span> Mini-Games <span class="mode-tag" style="background:#D1FAE5;color:#065F46;">Launch</span></a>
+    <a href="games/index.html?mode=exam" class="nav-link" style="color:var(--indigo); font-weight:700; margin-top:0.3rem;"><span class="icon">🎮</span> Live Patient Exam <span class="mode-tag" style="background:#D1FAE5;color:#065F46;">Interactive</span></a>
+    <button class="nav-link" id="nav-btn-remove" onclick="removePatientAssessment()" style="color:#DC2626; display:none;"><span class="icon">🗑️</span> Remove Assessment</button>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-section-title">Tools</div>
@@ -434,15 +456,32 @@ body.clinician-mode .clinician-section { display: block; }
 <!-- MAIN -->
 <main class="main">
 
-  <!-- Live Game Biometrics Notification Banner -->
-  <div id="game-banner" style="display:none; background:var(--green-l); border:1px solid #A7F3D0; border-radius:10px; padding:0.9rem 1.4rem; font-size:0.84rem; color:#065F46; margin-bottom:1.5rem; align-items:center; justify-content:space-between; gap:1rem;">
-    <div>
-      <span style="font-size:1.2rem; margin-right:0.4rem;">🎮</span>
-      <strong>Live Biometrics Imported from Mini-Games:</strong>
-      <span id="game-banner-details">Reaction Time: 420ms | Reversals: 1 | Tremor: 0.38 | Pause: 0.22</span>
-      &nbsp;— PyTorch forward pass re-computed!
+  <!-- Live Patient Exam Assessment Banner -->
+  <div id="live-assessment-banner" style="display:none; background:#ECFDF5; border:1.5px solid #A7F3D0; border-radius:12px; padding:1.1rem 1.5rem; margin-bottom:1.8rem; box-shadow:0 4px 12px rgba(16,185,129,0.08); align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+    <div style="display:flex; align-items:center; gap:0.9rem;">
+      <span style="font-size:2rem; background:#fff; width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.06); border:1px solid #A7F3D0;">🎉</span>
+      <div>
+        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+          <strong style="color:#065F46; font-size:1rem;">Live Assessment Generated in Real Time</strong>
+          <span style="background:#10B981; color:#fff; font-size:0.68rem; font-weight:700; padding:0.15rem 0.55rem; border-radius:12px;">PyTorch Neural Network</span>
+        </div>
+        <div style="color:#047857; font-size:0.82rem; margin-top:0.25rem;" id="lab-details-text">
+          Patient: <strong id="lab-patient-name">Leo Parker</strong> &nbsp;·&nbsp;
+          Reaction Latency: <span id="lab-metric-rt">420ms</span> &nbsp;·&nbsp;
+          Reversals: <span id="lab-metric-rev">1</span> &nbsp;·&nbsp;
+          Stylus Tremor: <span id="lab-metric-trem">0.38</span> &nbsp;·&nbsp;
+          Speech Pause: <span id="lab-metric-pause">0.24</span>
+        </div>
+      </div>
     </div>
-    <button onclick="document.getElementById('game-banner').style.display='none'" style="background:none; border:none; color:#065F46; font-weight:700; cursor:pointer;">✕</button>
+    <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+      <button onclick="removePatientAssessment()" style="padding:0.5rem 1rem; border-radius:8px; border:1.5px solid #FCA5A5; background:#FEF2F2; color:#B91C1C; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.4rem; transition:all 0.2s;">
+        <span>🗑️</span> Remove Assessment
+      </button>
+      <a href="games/index.html?mode=exam" style="padding:0.5rem 1rem; border-radius:8px; border:1.5px solid #059669; background:#10B981; color:#fff; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:0.4rem; transition:all 0.2s;">
+        <span>➕</span> Test Another Child
+      </a>
+    </div>
   </div>
 
   <!-- ① PATIENT PROFILE -->
@@ -1314,12 +1353,62 @@ async function runLiveSampleEvaluation() {
   setTimeout(() => { btn.textContent = '⚡ Run Live AI Evaluation'; }, 3000);
 }
 
+// ── REMOVE / RESET PATIENT ASSESSMENT IN REAL TIME ──
+async function removePatientAssessment() {
+  localStorage.removeItem('neuroLensLiveBiometrics');
+  localStorage.removeItem('neuroLensCurrentPatient');
+
+  // Hide live assessment banners and reset buttons
+  const bEl = document.getElementById('live-assessment-banner');
+  if (bEl) bEl.style.display = 'none';
+  const topReset = document.getElementById('btn-top-reset');
+  if (topReset) topReset.style.display = 'none';
+  const navReset = document.getElementById('nav-btn-remove');
+  if (navReset) navReset.style.display = 'none';
+
+  // Reset topnav and patient profile
+  document.getElementById('nav-patient').textContent = 'Leo Parker · Age 8 · 3rd Grade';
+  document.getElementById('s-name').textContent = 'Leo Parker (Baseline)';
+  document.getElementById('s-age').textContent = '8 yrs · 3rd Grade';
+  document.getElementById('s-flag').textContent = 'Dysgraphia + Dyslexia';
+
+  // Re-fetch baseline profile from PyTorch model
+  try {
+    const res = await fetch('http://localhost:5001/api/child_profile');
+    const data = await res.json();
+    renderCharts(data);
+    if (data.llm_narrative) document.getElementById('narrative-text').textContent = data.llm_narrative;
+    if (data.forecast_efficacy) document.getElementById('s-efficacy').textContent = data.forecast_efficacy + '% Improvement';
+  } catch {
+    renderCharts(STATIC);
+  }
+
+  showToast('🗑️ Patient assessment removed in real time. Dashboard reset to baseline.');
+  document.getElementById('section-patient').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showToast(msg) {
+  let toast = document.getElementById('dash-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'dash-toast';
+    toast.style.cssText = 'position:fixed;bottom:2rem;right:2rem;background:#0F172A;color:#fff;padding:0.9rem 1.4rem;border-radius:10px;font-size:0.85rem;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,0.2);z-index:9999;transition:all 0.3s ease;display:flex;align-items:center;gap:0.5rem;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateY(0)';
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
+  }, 3500);
+}
+
 window.onload = async () => {
   initDrawPad();
   loadSamplePresets();
 
-  // Check if returning from mini-games
-  const fromGame = params.get('from_game');
+  const fromGame = params.get('from_game') || params.get('from_exam');
   const savedBio = localStorage.getItem('neuroLensLiveBiometrics');
 
   try {
@@ -1336,24 +1425,75 @@ window.onload = async () => {
     document.getElementById('api-badge-text').textContent = 'API Offline — Demo Data';
   }
 
-  // Apply mini-game biometrics if present
-  if (fromGame && savedBio) {
+  // Apply real-time patient exam biometrics if available
+  if (savedBio) {
     try {
       const bio = JSON.parse(savedBio);
-      const bEl = document.getElementById('game-banner');
-      if (bEl) {
-        bEl.style.display = 'flex';
-        document.getElementById('game-banner-details').textContent =
-          `Reaction Latency: ${bio.reactionTime}ms · Reversal Errors: ${bio.reversalErrors} · Tremor: ${bio.penTremor} · Pause: ${bio.pauseRatio}`;
+      
+      // Update patient profile info
+      const pName = (bio.patient && bio.patient.name) ? bio.patient.name : (bio.name || 'Leo Parker');
+      const pAge = (bio.patient && bio.patient.age) ? bio.patient.age : (bio.age || 8);
+      const pGrade = (bio.patient && bio.patient.grade) ? bio.patient.grade : (bio.grade || '3rd Grade');
+      const pId = (bio.patient && bio.patient.id) ? bio.patient.id : (bio.child_id || 'NL-2026-LIVE');
+
+      document.getElementById('nav-patient').textContent = `${pName} · Age ${pAge} · ${pGrade}`;
+      document.getElementById('s-name').textContent = pName;
+      document.getElementById('s-age').textContent = `${pAge} yrs · ${pGrade}`;
+      
+      // Show live assessment banner
+      const banner = document.getElementById('live-assessment-banner');
+      if (banner) {
+        banner.style.display = 'flex';
+        document.getElementById('lab-patient-name').textContent = pName;
+        
+        const m = bio.liveMetrics || {
+          reaction_time_ms: bio.reactionTime || 420,
+          reversal_errors: bio.reversalErrors !== undefined ? bio.reversalErrors : 1,
+          pen_tremor: bio.penTremor || 0.38,
+          pause_ratio: bio.pauseRatio || 0.24
+        };
+
+        document.getElementById('lab-metric-rt').textContent = `${m.reaction_time_ms || m.reactionTime}ms`;
+        document.getElementById('lab-metric-rev').textContent = m.reversal_errors !== undefined ? m.reversal_errors : m.reversalErrors;
+        document.getElementById('lab-metric-trem').textContent = m.pen_tremor || m.penTremor;
+        document.getElementById('lab-metric-pause').textContent = m.pause_ratio || m.pauseRatio;
       }
+
+      // Show reset buttons
+      const topReset = document.getElementById('btn-top-reset');
+      if (topReset) topReset.style.display = 'flex';
+      const navReset = document.getElementById('nav-btn-remove');
+      if (navReset) navReset.style.display = 'flex';
+
+      // Update risk scores and severities
       if (bio.riskScores) {
         applyResult(bio.riskScores, bio.severityIndices);
       }
+
+      // Update narrative
       if (bio.liveNarrative) {
         document.getElementById('narrative-text').textContent = bio.liveNarrative;
       }
-      document.getElementById('section-risk').scrollIntoView({ behavior: 'smooth' });
-    } catch(e) {}
+
+      // Update longitudinal forecast trajectory if present
+      if (bio.longitudinalTrajectory && driftChart) {
+        driftChart.data.labels = bio.longitudinalTrajectory.map(t => t.session);
+        driftChart.data.datasets[0].data = bio.longitudinalTrajectory.map(t => t.dyslexia);
+        driftChart.data.datasets[1].data = bio.longitudinalTrajectory.map(t => t.dysgraphia);
+        driftChart.data.datasets[2].data = bio.longitudinalTrajectory.map(t => t.adhd);
+        driftChart.update();
+      }
+
+      if (bio.forecastEfficacy) {
+        document.getElementById('s-efficacy').textContent = bio.forecastEfficacy + '% Improvement';
+      }
+
+      if (fromGame) {
+        document.getElementById('section-patient').scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch(e) {
+      console.warn('Could not parse live biometrics from storage', e);
+    }
   }
 };
 </script>

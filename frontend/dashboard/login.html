@@ -72,29 +72,38 @@
 
   /* Role tabs */
   .role-tabs {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem;
     background: #F1F5F9; border-radius: 10px; padding: 0.3rem;
-    margin-bottom: 1.8rem;
+    margin-bottom: 1.5rem;
   }
   .role-tab {
-    padding: 0.55rem 0.5rem; border-radius: 8px; border: none;
+    padding: 0.5rem 0.3rem; border-radius: 8px; border: none;
     background: transparent; cursor: pointer; transition: all 0.2s;
-    font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 500;
-    color: #64748B; display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+    font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500;
+    color: #64748B; display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+    text-align: center;
   }
-  .role-tab span { font-size: 1.1rem; }
+  .role-tab span { font-size: 1.05rem; }
   .role-tab.active { background: #fff; color: #4F46E5; font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 
   /* Form fields */
   .field { margin-bottom: 1.1rem; }
   .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.4rem; }
-  .field input {
+  .field input, .field select {
     width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #E2E8F0;
     border-radius: 9px; font-family: 'Inter', sans-serif; font-size: 0.92rem;
     color: #0F172A; background: #fff; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .field input:focus { border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
+  .field input:focus, .field select:focus { border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
   .field input::placeholder { color: #CBD5E1; }
+  
+  .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  .student-presets { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .preset-pill {
+    padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+    border: 1px solid #C7D2FE; background: #EEF2FF; color: #4F46E5; cursor: pointer; transition: all 0.15s;
+  }
+  .preset-pill:hover { background: #E0E7FF; }
 
   /* Demo hint */
   .demo-box {
@@ -195,8 +204,8 @@
   <!-- RIGHT FORM PANEL -->
   <div class="right-panel">
     <div class="form-header">
-      <h2>Welcome back</h2>
-      <p>Sign in to access the NeuroLens assessment dashboard</p>
+      <h2 id="form-title">Welcome back</h2>
+      <p id="form-sub">Sign in to access the NeuroLens assessment dashboard</p>
     </div>
 
     <!-- Role selector -->
@@ -204,23 +213,54 @@
       <button class="role-tab active" id="tab-teacher"   onclick="selectRole('teacher')">  <span>👩‍🏫</span>Teacher</button>
       <button class="role-tab"        id="tab-clinician" onclick="selectRole('clinician')"><span>🔬</span>Clinician</button>
       <button class="role-tab"        id="tab-admin"     onclick="selectRole('admin')">    <span>⚙️</span>Admin</button>
+      <button class="role-tab"        id="tab-student"   onclick="selectRole('student')">  <span>🧒</span>Student (Exam)</button>
     </div>
 
-    <!-- Demo hint -->
-    <div class="demo-box">
+    <!-- Staff Demo hint -->
+    <div class="demo-box" id="demo-box">
       🎓 <strong>Demo credentials:</strong><br>
       Email: <strong>demo@neurolens.ai</strong> &nbsp; Password: <strong>demo123</strong>
     </div>
 
-    <!-- Fields -->
-    <div class="field">
-      <label for="email">Email address</label>
-      <input type="email" id="email" placeholder="demo@neurolens.ai" value="demo@neurolens.ai" autocomplete="username">
+    <!-- STAFF LOGIN FIELDS -->
+    <div id="staff-fields">
+      <div class="field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" placeholder="demo@neurolens.ai" value="demo@neurolens.ai" autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" value="demo123" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
     </div>
-    <div class="field">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="••••••••" value="demo123" autocomplete="current-password"
-             onkeydown="if(event.key==='Enter')doLogin()">
+
+    <!-- STUDENT / PATIENT EXAM FIELDS (hidden by default) -->
+    <div id="student-fields" style="display:none;">
+      <div style="font-size:0.75rem; font-weight:700; color:#64748B; margin-bottom:0.4rem;">Select or Enter Child Profile:</div>
+      <div class="student-presets">
+        <button class="preset-pill" type="button" onclick="setStudent('Leo Parker', 8, '3rd Grade')">Leo Parker (Age 8)</button>
+        <button class="preset-pill" type="button" onclick="setStudent('Maya Chen', 9, '4th Grade')">Maya Chen (Age 9)</button>
+        <button class="preset-pill" type="button" onclick="setStudent('Sam Taylor', 7, '2nd Grade')">Sam Taylor (Age 7)</button>
+      </div>
+      <div class="field">
+        <label for="student-name">Student / Child Full Name</label>
+        <input type="text" id="student-name" placeholder="e.g. Leo Parker" value="Leo Parker">
+      </div>
+      <div class="fields-row">
+        <div class="field">
+          <label for="student-age">Age</label>
+          <input type="number" id="student-age" value="8" min="5" max="18">
+        </div>
+        <div class="field">
+          <label for="student-grade">Grade Level</label>
+          <input type="text" id="student-grade" value="3rd Grade">
+        </div>
+      </div>
+      <div class="field">
+        <label for="student-pin">Session Access PIN (Optional)</label>
+        <input type="text" id="student-pin" value="student123" placeholder="student123">
+      </div>
     </div>
 
     <button class="submit-btn" onclick="doLogin()" id="submit-btn">Sign In →</button>
@@ -238,16 +278,77 @@
 
 <script>
   let role = 'teacher';
+  
   function selectRole(r) {
     role = r;
     document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + r).classList.add('active');
+    
+    const staffFields = document.getElementById('staff-fields');
+    const studentFields = document.getElementById('student-fields');
+    const demoBox = document.getElementById('demo-box');
+    const btn = document.getElementById('submit-btn');
+    const title = document.getElementById('form-title');
+    const sub = document.getElementById('form-sub');
+    const err = document.getElementById('error-box');
+    err.style.display = 'none';
+
+    if (r === 'student') {
+      staffFields.style.display = 'none';
+      studentFields.style.display = 'block';
+      demoBox.innerHTML = '🎮 <strong>Student Assessment Portal:</strong><br>Enter child details and launch the 3-minute interactive screening exam!';
+      title.textContent = 'Patient Live Exam';
+      sub.textContent = 'Begin interactive screening to test reaction time, tremor & speech';
+      btn.textContent = '🚀 Launch Live Screening Exam →';
+      btn.style.background = '#10B981';
+    } else {
+      staffFields.style.display = 'block';
+      studentFields.style.display = 'none';
+      demoBox.innerHTML = '🎓 <strong>Demo credentials:</strong><br>Email: <strong>demo@neurolens.ai</strong> &nbsp; Password: <strong>demo123</strong>';
+      title.textContent = 'Welcome back';
+      sub.textContent = 'Sign in to access the NeuroLens assessment dashboard';
+      btn.textContent = 'Sign In →';
+      btn.style.background = '#4F46E5';
+    }
   }
+
+  function setStudent(name, age, grade) {
+    document.getElementById('student-name').value = name;
+    document.getElementById('student-age').value = age;
+    document.getElementById('student-grade').value = grade;
+  }
+
   function doLogin() {
+    const btn = document.getElementById('submit-btn');
+    const err = document.getElementById('error-box');
+
+    if (role === 'student') {
+      const name = document.getElementById('student-name').value.trim() || 'Leo Parker';
+      const age = parseInt(document.getElementById('student-age').value) || 8;
+      const grade = document.getElementById('student-grade').value.trim() || '3rd Grade';
+      const patientId = 'NL-2026-' + Math.floor(1000 + Math.random() * 9000);
+
+      const patientData = {
+        name: name,
+        age: age,
+        grade: grade,
+        id: patientId,
+        startTime: Date.now()
+      };
+
+      localStorage.setItem('neuroLensCurrentPatient', JSON.stringify(patientData));
+
+      btn.textContent = 'Preparing Live Exam…';
+      btn.style.opacity = '0.7';
+
+      setTimeout(() => {
+        window.location.href = '../games/index.html?mode=exam&patient_name=' + encodeURIComponent(name);
+      }, 500);
+      return;
+    }
+
     const email = document.getElementById('email').value.trim();
     const pass  = document.getElementById('password').value.trim();
-    const btn   = document.getElementById('submit-btn');
-    const err   = document.getElementById('error-box');
     const valid = {
       'demo@neurolens.ai': 'demo123',
       'demo': 'demo123',
