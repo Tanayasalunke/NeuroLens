@@ -45,7 +45,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Footer (All Pages)
         self.setFont("Helvetica", 8)
-        self.drawString(36, 22, "Department of Computer Engineering | Roll Nos: 23101A0074, 23101A0065, 23101A0060")
+        self.drawString(36, 22, "Department of Information Technology | Roll Nos: 23101A0074, 23101A0065, 23101A0060")
         page_str = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(576, 22, page_str)
         self.setStrokeColor(HexColor("#CBD5E1"))
@@ -231,9 +231,9 @@ def build_pdf():
     story.append(HRFlowable(width="100%", thickness=1.5, color=PRIMARY_BLUE, spaceBefore=2, spaceAfter=10))
     
     project_info = (
-        "<b>Academic Year:</b> 2025–2026 &nbsp;&nbsp;|&nbsp;&nbsp; <b>Degree:</b> Bachelor of Engineering in Computer Engineering<br/>"
+        "<b>Academic Year:</b> 2025–2026 &nbsp;&nbsp;|&nbsp;&nbsp; <b>Degree:</b> Bachelor of Engineering in Information Technology<br/>"
         "<b>Project Team Members:</b> Roll No. 23101A0074, Roll No. 23101A0065, Roll No. 23101A0060<br/>"
-        "<b>Department:</b> Department of Computer Engineering<br/>"
+        "<b>Department:</b> Department of Information Technology<br/>"
         "<b>Technologies Used:</b> Python 3.10, PyTorch, TorchVision, OpenCV, Flask, Web Audio API, WebGaze.js, HTML5 Canvas<br/>"
         "<b>Source Code Repository:</b> https://github.com/Tanayasalunke/NeuroLens"
     )
@@ -678,15 +678,14 @@ def build_pdf():
     ))
     
     story.append(Spacer(1, 10))
-    story.append(Paragraph("<b>Department of Computer Engineering &mdash; Project Approved by:</b>", body_bold))
+    story.append(Paragraph("<b>Department of Information Technology &mdash; Project Approved by:</b>", body_bold))
     story.append(Spacer(1, 20))
     
     sig_data = [
-        [Paragraph("<b>Student Team Members:</b><br/>23101A0074, 23101A0065, 23101A0060", body_style),
-         Paragraph("<b>Project Guide:</b><br/>Department of Computer Engineering", body_style),
-         Paragraph("<b>Head of Department:</b><br/>Department of Computer Engineering", body_style)]
+        [Paragraph("<b>Student Team Members:</b><br/>Roll Nos: 23101A0074, 23101A0065, 23101A0060", body_style),
+         Paragraph("<b>Project Guide:</b><br/>Department of Information Technology", body_style)]
     ]
-    t_sig = Table(sig_data, colWidths=[180, 180, 180])
+    t_sig = Table(sig_data, colWidths=[270, 270])
     t_sig.setStyle(TableStyle([
         ('LINEABOVE', (0,0), (-1,0), 1, BORDER_COLOR),
         ('TOPPADDING', (0,0), (-1,-1), 8),
