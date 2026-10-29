@@ -1169,10 +1169,25 @@ async function runSimulation() {
     const d = await res.json();
     applyResult(d.risk_scores, d.severity_indices);
     if (d.live_narrative) document.getElementById('narrative-text').textContent = d.live_narrative;
-    btn.textContent = '✓ Done (Real Model)';
+    
+    // Populate result panel
+    document.getElementById('result-panel').classList.add('show');
+    document.getElementById('res-dys').textContent  = pct(d.risk_scores.dyslexia);
+    document.getElementById('res-dysg').textContent = pct(d.risk_scores.dysgraphia);
+    document.getElementById('res-dysc').textContent = pct(d.risk_scores.dyscalculia);
+    document.getElementById('res-adhd').textContent = pct(d.risk_scores.adhd_reading);
+    
+    btn.textContent = '✓ Done (Real PyTorch Model)';
   } catch {
     const r = simModel(fix, trem, pause, tbr, sens);
     applyResult(r, {dyslexia:r.dyslexia*0.9, dysgraphia:r.dysgraphia*0.95, dyscalculia:r.dyscalculia*0.85, adhd_reading:r.adhd_reading*0.88});
+    
+    document.getElementById('result-panel').classList.add('show');
+    document.getElementById('res-dys').textContent  = pct(r.dyslexia);
+    document.getElementById('res-dysg').textContent = pct(r.dysgraphia);
+    document.getElementById('res-dysc').textContent = pct(r.dyscalculia);
+    document.getElementById('res-adhd').textContent = pct(r.adhd_reading);
+    
     btn.textContent = '✓ Done (Simulation)';
   }
   btn.classList.remove('loading');
@@ -1497,5 +1512,6 @@ window.onload = async () => {
   }
 };
 </script>
+<div id="dash-toast" style="position:fixed;bottom:2rem;right:2rem;background:#0F172A;color:#fff;padding:0.9rem 1.4rem;border-radius:10px;font-size:0.85rem;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,0.2);z-index:9999;transition:all 0.3s ease;display:flex;align-items:center;gap:0.5rem;opacity:0;transform:translateY(20px);pointer-events:none;"></div>
 </body>
 </html>
