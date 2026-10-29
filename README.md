@@ -266,15 +266,32 @@ PYTHONPATH=. python3 reports/generate_pdf_report.py
 PYTHONPATH=. python3 reports/generate_teacher_pitch_pdf.py
 ```
 
-### 7. Launch Interactive Web Dashboard & Mini-Games
-```bash
-# Start Flask API Server on port 5001
-PYTHONPATH=. python3 frontend/dashboard/api_server.py
-```
-- **Digital Cognitive Twin Dashboard**: Open [frontend/dashboard/index.html](frontend/dashboard/index.html) in your browser.
-- **Gamified Mini-Games**: Open [frontend/games/index.html](frontend/games/index.html) in your browser.
+### 7. Launch Interactive Web Dashboard & Live Screening Exam
+NeuroLens features an end-to-end web interface with real-time PyTorch inference:
 
----
+```bash
+# Terminal 1: Start PyTorch Multi-Task & XAI API Server (Port 5001)
+source venv/bin/activate
+PYTHONPATH=. python frontend/dashboard/api_server.py
+
+# Terminal 2: Start Web Dashboard Static Server (Port 8080)
+python3 -m http.server 8080 --directory "frontend/dashboard"
+```
+
+#### Application URLs:
+- **Authentication & Role Switcher**: Open [`http://localhost:8080/login.html`](http://localhost:8080/login.html)
+  - **👩‍🏫 Teacher / 🔬 Clinician / ⚙️ Admin**: Access the Clinical Dashboard (`demo@neurolens.ai` / `demo123`).
+  - **🧒 Student (Live Exam)**: Choose a child preset (*Leo Parker*, *Maya Chen*, *Sam Taylor*) or enter a custom name to launch the interactive screening exam.
+- **Guided Live Screening Exam**: Open [`http://localhost:8080/games/index.html?mode=exam`](http://localhost:8080/games/index.html?mode=exam)
+  - 1. *Letter Catch*: Real-time reaction latency and letter reversal ($b/d, p/q$) detection.
+  - 2. *Maze Tracer*: Real-time stylus tremor oscillations and boundary deviation metrics.
+  - 3. *Story Reader*: Microphone voice tracking for hesitation pause ratios and gaze regressions.
+  - 4. **`✨ Finish Exam & Run Real-Time Deep Learning Assessment`**: Submits biometrics to the PyTorch model and redirects to the personalized dashboard!
+- **Digital Cognitive Twin Dashboard**: Open [`http://localhost:8080/index.html`](http://localhost:8080/index.html)
+  - **Live Exam Banner**: Displays child biometrics with instant **`🗑️ Remove Assessment`** to reset to baseline in real time.
+  - **Live Diagnostic Lab**: Real-time handwriting canvas evaluation + **Grad-CAM saliency heatmaps** (~15ms latency).
+  - **Digital Twin & Trajectory**: Radar charts, SHAP attribution bars, and **6-Month BiLSTM forecast curves**.
+  - **Clinician Sandbox**: Interactive slider simulations with **Modality Dropout** toggles.
 
 ## 🛡️ Responsible AI & Ethical Disclaimer
 
