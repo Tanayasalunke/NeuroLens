@@ -299,7 +299,59 @@ body.clinician-mode .clinician-section { display: block; }
   display: none; background: none; border: none; cursor: pointer;
   flex-direction: column; gap: 4px; padding: 0.3rem;
 }
-.hamburger span { display: block; width: 20px; height: 2px; background: var(--gray-500); border-radius: 2px; }
+/* ── LIVE DIAGNOSTIC LAB ── */
+.lab-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem; }
+.sample-card {
+  border: 1.5px solid var(--gray-200); border-radius: 12px;
+  padding: 1rem; background: #fff; cursor: pointer; transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  position: relative;
+}
+.sample-card:hover { border-color: var(--indigo); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79,70,229,0.1); }
+.sample-card.active { border-color: var(--indigo); background: var(--indigo-l); box-shadow: 0 0 0 2px var(--indigo); }
+.sample-card .check-pill {
+  display: none; position: absolute; top: 8px; right: 8px;
+  background: var(--indigo); color: #fff; font-size: 0.65rem; font-weight: 700;
+  border-radius: 10px; padding: 0.1rem 0.4rem;
+}
+.sample-card.active .check-pill { display: block; }
+.sample-img-box {
+  width: 72px; height: 72px; border-radius: 8px; background: #000;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; margin-bottom: 0.6rem; border: 1px solid var(--gray-300);
+}
+.sample-img-box img { width: 100%; height: 100%; object-fit: contain; }
+.sample-title { font-size: 0.8rem; font-weight: 700; color: var(--gray-900); }
+.sample-cat   { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-400); margin-top: 0.15rem; }
+.sample-desc  { font-size: 0.7rem; color: var(--gray-500); margin-top: 0.35rem; line-height: 1.4; }
+
+.draw-pad-box {
+  border: 1.5px dashed var(--gray-300); border-radius: 8px;
+  width: 72px; height: 72px; background: #fff; cursor: crosshair; margin-bottom: 0.4rem;
+}
+
+.lab-results {
+  margin-top: 1.2rem; background: #fff; border: 1.5px solid var(--gray-200);
+  border-radius: 12px; padding: 1.5rem; display: none;
+}
+.lab-results.show { display: block; }
+.lab-results-grid { display: grid; grid-template-columns: auto auto 1fr; gap: 1.5rem; align-items: center; }
+.image-preview-card { text-align: center; }
+.image-preview-card .img-frame {
+  width: 130px; height: 130px; border-radius: 10px; background: #000;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  border: 1.5px solid var(--gray-300); box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.image-preview-card .img-frame img { width: 100%; height: 100%; object-fit: cover; }
+.image-preview-card .caption { font-size: 0.72rem; font-weight: 700; color: var(--gray-500); margin-top: 0.4rem; text-transform: uppercase; }
+
+.launch-games-btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 1.2rem; border-radius: 8px; background: var(--indigo-l);
+  color: var(--indigo); font-weight: 700; font-size: 0.82rem; text-decoration: none;
+  border: 1px solid #C7D2FE; transition: all 0.2s;
+}
+.launch-games-btn:hover { background: #E0E7FF; border-color: var(--indigo); }
 </style>
 </head>
 <body>
@@ -330,11 +382,13 @@ body.clinician-mode .clinician-section { display: block; }
   <div class="sidebar-section">
     <div class="sidebar-section-title">Assessment</div>
     <button class="nav-link active" onclick="scrollTo('section-patient')"><span class="icon">👤</span> Patient Profile</button>
+    <button class="nav-link" onclick="scrollTo('section-lab')">    <span class="icon">🧪</span> Live Diagnostic Lab</button>
     <button class="nav-link" onclick="scrollTo('section-risk')">    <span class="icon">🎯</span> Risk Profile</button>
     <button class="nav-link" onclick="scrollTo('section-shap')">    <span class="icon">📊</span> Explainability (SHAP)</button>
     <button class="nav-link" onclick="scrollTo('section-forecast')"><span class="icon">📈</span> 6-Month Forecast</button>
     <button class="nav-link" onclick="scrollTo('section-conformal')"><span class="icon">🛡</span> Conformal Decision</button>
     <button class="nav-link" onclick="scrollTo('section-narrative')"><span class="icon">📝</span> AI Report</button>
+    <a href="games/index.html" target="_blank" class="nav-link" style="margin-top:0.3rem;"><span class="icon">🎮</span> Mini-Games <span class="mode-tag" style="background:#D1FAE5;color:#065F46;">Launch</span></a>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-section-title">Tools</div>
@@ -394,6 +448,128 @@ body.clinician-mode .clinician-section { display: block; }
         <div class="stat-value" style="color:var(--green)" id="s-efficacy">84.5% Improvement</div>
         <div class="stat-sub">6-month trajectory prediction</div>
       </div>
+    </div>
+  </section>
+
+  <!-- 🧪 LIVE DIAGNOSTIC LAB -->
+  <section class="section" id="section-lab">
+    <div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+      <div>
+        <div class="section-title">🧪 Live Diagnostic Lab — Test Real Samples</div>
+        <div class="section-sub">Select an actual clinical sample from the Gambo test set, draw on the interactive canvas pad, or upload a handwriting image to evaluate live through the PyTorch ResNet-18 model</div>
+      </div>
+      <a href="games/index.html" target="_blank" class="launch-games-btn">
+        <span>🎮</span> Launch Biometric Mini-Games →
+      </a>
+    </div>
+
+    <div class="card">
+      <div style="font-size:0.75rem; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.4rem;">
+        Step 1: Choose Evaluation Sample or Draw Below
+      </div>
+
+      <div class="lab-grid">
+        <!-- Sample 1 -->
+        <div class="sample-card active" id="card-reversal" onclick="selectPreset('reversal')">
+          <div class="check-pill">SELECTED</div>
+          <div class="sample-img-box">
+            <img id="thumb-reversal" src="" alt="Sample 1">
+          </div>
+          <div class="sample-title">Reversal 'b' / 'd'</div>
+          <div class="sample-cat" style="color:var(--red);">Dyslexia Marker</div>
+          <div class="sample-desc">Spatial orientation inversion from real Gambo test set</div>
+        </div>
+
+        <!-- Sample 2 -->
+        <div class="sample-card" id="card-corrected" onclick="selectPreset('corrected')">
+          <div class="check-pill">SELECTED</div>
+          <div class="sample-img-box">
+            <img id="thumb-corrected" src="" alt="Sample 2">
+          </div>
+          <div class="sample-title">Corrected Stroke</div>
+          <div class="sample-cat" style="color:var(--yellow);">Dysgraphia Marker</div>
+          <div class="sample-desc">Segmented and hesitant motor correction strokes</div>
+        </div>
+
+        <!-- Sample 3 -->
+        <div class="sample-card" id="card-normal" onclick="selectPreset('normal')">
+          <div class="check-pill">SELECTED</div>
+          <div class="sample-img-box">
+            <img id="thumb-normal" src="" alt="Sample 3">
+          </div>
+          <div class="sample-title">Normal Control</div>
+          <div class="sample-cat" style="color:var(--green);">Typical Control</div>
+          <div class="sample-desc">Smooth, fluent baseline from typical developmental control</div>
+        </div>
+
+        <!-- Sample 4: Interactive Pad -->
+        <div class="sample-card" id="card-custom" onclick="selectPreset('custom')">
+          <div class="check-pill">SELECTED</div>
+          <canvas id="draw-pad" class="draw-pad-box" width="120" height="120"></canvas>
+          <div class="sample-title">Live Canvas Pad</div>
+          <div class="sample-cat" style="color:var(--indigo);">Draw / Upload</div>
+          <div style="display:flex; gap:0.4rem; margin-top:0.4rem;">
+            <button onclick="clearDrawPad(event)" style="font-size:0.65rem; padding:0.15rem 0.4rem; border:1px solid var(--gray-300); border-radius:4px; background:#fff; cursor:pointer;">Clear</button>
+            <label style="font-size:0.65rem; padding:0.15rem 0.4rem; border:1px solid var(--gray-300); border-radius:4px; background:#fff; cursor:pointer;">
+              Upload<input type="file" id="file-upload" accept="image/*" style="display:none" onchange="uploadImage(event)">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 Button -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.2rem; padding-top:1rem; border-top:1px solid var(--gray-200); flex-wrap:wrap; gap:1rem;">
+        <div style="font-size:0.8rem; color:var(--gray-500);">
+          Selected Target: <strong id="lbl-selected-sample" style="color:var(--indigo);">Letter Reversal Error ("b" vs "d")</strong>
+        </div>
+        <button class="run-btn" id="btn-run-eval" onclick="runLiveSampleEvaluation()">
+          ⚡ Run Live AI Evaluation
+        </button>
+      </div>
+
+      <!-- Live Evaluation Results Display -->
+      <div class="lab-results" id="lab-results">
+        <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--indigo); margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
+          <span>Live Neural Network Forward Pass &amp; Grad-CAM Saliency Map</span>
+          <span id="lbl-inference-time" style="font-weight:600; color:var(--gray-400);">Latency: -- ms</span>
+        </div>
+
+        <div class="lab-results-grid">
+          <!-- Input Image -->
+          <div class="image-preview-card">
+            <div class="img-frame">
+              <img id="res-img-orig" src="" alt="Input Stroke">
+            </div>
+            <div class="caption">Input Stroke</div>
+          </div>
+
+          <!-- Grad-CAM Heatmap -->
+          <div class="image-preview-card">
+            <div class="img-frame" style="border-color:var(--indigo);">
+              <img id="res-img-heat" src="" alt="Grad-CAM Saliency">
+            </div>
+            <div class="caption" style="color:var(--indigo);">🔥 Grad-CAM Heatmap</div>
+          </div>
+
+          <!-- Diagnosis Details -->
+          <div>
+            <div style="font-size:1.15rem; font-weight:800; color:var(--gray-900);" id="res-diag-title">Evaluating sample…</div>
+            <div style="display:inline-block; margin-top:0.4rem; padding:0.25rem 0.8rem; border-radius:20px; font-size:0.75rem; font-weight:700;" id="res-conf-badge" class="badge-high">
+              HIGH RISK
+            </div>
+            <p style="font-size:0.82rem; color:var(--gray-600); margin-top:0.6rem; line-height:1.6;" id="res-diag-desc">
+              The model executes a forward pass on the handwriting encoder, computing the gradient activations on Conv2d layer 6 to identify spatial stroke anomalies.
+            </p>
+            <div style="display:flex; gap:1.5rem; margin-top:0.8rem; padding-top:0.8rem; border-top:1px solid var(--gray-100); font-size:0.78rem;">
+              <div>Dyslexia: <strong id="res-num-dys" style="color:var(--red);">--%</strong></div>
+              <div>Dysgraphia: <strong id="res-num-dysg" style="color:var(--red);">--%</strong></div>
+              <div>Dyscalculia: <strong id="res-num-dysc" style="color:var(--green);">--%</strong></div>
+              <div>ADHD: <strong id="res-num-adhd" style="color:var(--yellow);">--%</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -915,7 +1091,169 @@ const STATIC = {
   ]
 };
 
+// ── LIVE DIAGNOSTIC LAB LOGIC ──
+let activePreset = 'reversal';
+let customImageB64 = null;
+let isDrawing = false;
+let drawCanvas, drawCtx;
+
+function initDrawPad() {
+  drawCanvas = document.getElementById('draw-pad');
+  if (!drawCanvas) return;
+  drawCtx = drawCanvas.getContext('2d');
+  drawCtx.fillStyle = '#FFFFFF';
+  drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+  drawCtx.lineWidth = 5;
+  drawCtx.lineCap = 'round';
+  drawCtx.strokeStyle = '#000000';
+
+  function getPos(e) {
+    const rect = drawCanvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * (drawCanvas.width / rect.width),
+      y: (clientY - rect.top) * (drawCanvas.height / rect.height)
+    };
+  }
+
+  function startDraw(e) {
+    isDrawing = true;
+    selectPreset('custom');
+    const p = getPos(e);
+    drawCtx.beginPath();
+    drawCtx.moveTo(p.x, p.y);
+    e.preventDefault();
+  }
+  function moveDraw(e) {
+    if (!isDrawing) return;
+    const p = getPos(e);
+    drawCtx.lineTo(p.x, p.y);
+    drawCtx.stroke();
+    e.preventDefault();
+  }
+  function endDraw() {
+    isDrawing = false;
+    customImageB64 = drawCanvas.toDataURL('image/png');
+  }
+
+  drawCanvas.addEventListener('mousedown', startDraw);
+  drawCanvas.addEventListener('mousemove', moveDraw);
+  window.addEventListener('mouseup', endDraw);
+  drawCanvas.addEventListener('touchstart', startDraw, { passive: false });
+  drawCanvas.addEventListener('touchmove', moveDraw, { passive: false });
+  window.addEventListener('touchend', endDraw);
+}
+
+function clearDrawPad(e) {
+  if (e) e.stopPropagation();
+  if (drawCtx) {
+    drawCtx.fillStyle = '#FFFFFF';
+    drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+  }
+  customImageB64 = null;
+}
+
+function uploadImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    customImageB64 = evt.target.result;
+    selectPreset('custom');
+    const img = new Image();
+    img.onload = () => {
+      drawCtx.drawImage(img, 0, 0, drawCanvas.width, drawCanvas.height);
+    };
+    img.src = customImageB64;
+  };
+  reader.readAsDataURL(file);
+}
+
+const PRESET_TITLES = {
+  reversal: 'Letter Reversal Error ("b" vs "d") — Gambo Test Set',
+  corrected: 'Hesitant / Corrected Stroke — Gambo Test Set',
+  normal: 'Normal Control Handwriting — Gambo Test Set',
+  custom: 'Interactive Canvas Drawing / Custom Upload'
+};
+
+function selectPreset(type) {
+  activePreset = type;
+  document.querySelectorAll('.sample-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('card-' + type);
+  if (card) card.classList.add('active');
+  document.getElementById('lbl-selected-sample').textContent = PRESET_TITLES[type] || type;
+}
+
+async function loadSamplePresets() {
+  try {
+    const res = await fetch('http://localhost:5001/api/sample_presets');
+    const data = await res.json();
+    if (data.reversal && data.reversal.thumbnail) {
+      document.getElementById('thumb-reversal').src = data.reversal.thumbnail;
+    }
+    if (data.corrected && data.corrected.thumbnail) {
+      document.getElementById('thumb-corrected').src = data.corrected.thumbnail;
+    }
+    if (data.normal && data.normal.thumbnail) {
+      document.getElementById('thumb-normal').src = data.normal.thumbnail;
+    }
+  } catch (e) {
+    console.warn('Could not load sample presets from API', e);
+  }
+}
+
+async function runLiveSampleEvaluation() {
+  const btn = document.getElementById('btn-run-eval');
+  btn.classList.add('loading');
+  btn.textContent = '⏳ Model Evaluating…';
+
+  const body = {
+    sample_type: activePreset,
+    image_base64: activePreset === 'custom' ? (customImageB64 || (drawCanvas ? drawCanvas.toDataURL('image/png') : null)) : null
+  };
+
+  try {
+    const res = await fetch('http://localhost:5001/api/test_sample', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await res.json();
+
+    document.getElementById('lab-results').classList.add('show');
+    document.getElementById('res-img-orig').src = d.original_image;
+    document.getElementById('res-img-heat').src = d.gradcam_heatmap;
+    document.getElementById('lbl-inference-time').textContent = `Inference Latency: ${d.inference_ms} ms (PyTorch)`;
+    document.getElementById('res-diag-title').textContent = d.primary_diagnosis;
+
+    const badgeEl = document.getElementById('res-conf-badge');
+    badgeEl.textContent = d.conformal_state;
+    badgeEl.className = 'badge-' + (d.conformal_class || 'high');
+
+    document.getElementById('res-diag-desc').textContent = d.narrative;
+    document.getElementById('res-num-dys').textContent  = pct(d.risk_scores.dyslexia);
+    document.getElementById('res-num-dysg').textContent = pct(d.risk_scores.dysgraphia);
+    document.getElementById('res-num-dysc').textContent = pct(d.risk_scores.dyscalculia);
+    document.getElementById('res-num-adhd').textContent = pct(d.risk_scores.adhd_reading);
+
+    applyResult(d.risk_scores, d.severity_indices);
+    document.getElementById('narrative-text').textContent = d.narrative;
+
+    btn.textContent = '✓ Evaluation Complete';
+    document.getElementById('lab-results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (err) {
+    btn.textContent = '⚠️ API Error';
+    alert('Please verify api_server.py is running on port 5001');
+  }
+
+  btn.classList.remove('loading');
+  setTimeout(() => { btn.textContent = '⚡ Run Live AI Evaluation'; }, 3000);
+}
+
 window.onload = async () => {
+  initDrawPad();
+  loadSamplePresets();
   try {
     const res  = await fetch('http://localhost:5001/api/child_profile');
     const data = await res.json();
