@@ -1,8 +1,15 @@
+import sys
+import os
+
+# Ensure repository root is on sys.path regardless of execution CWD
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
 import torch
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import numpy as np
-import os
 
 from data.loaders import get_dataloader
 from models.multi_task_heads import MultiModalNeuroLensModel
@@ -19,7 +26,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = MultiModalNeuroLensModel().to(device)
 
 # Load trained checkpoint if available
-checkpoint_path = 'checkpoints/neurolens_fusion_model.pt'
+checkpoint_path = os.path.join(REPO_ROOT, 'checkpoints/neurolens_fusion_model.pt')
 if os.path.exists(checkpoint_path):
     try:
         model.load_state_dict(torch.load(checkpoint_path, map_location=device))
@@ -38,7 +45,8 @@ nlg = LLMNarrativeGenerator()
 
 @app.route('/api/child_profile', methods=['GET'])
 def get_child_profile():
-    loader = get_dataloader(split='Test', batch_size=1)
+    data_dir = os.path.join(REPO_ROOT, 'data/raw/Gambo')
+    loader = get_dataloader(root_dir=data_dir, split='Test', batch_size=1)
     batch = next(iter(loader))
     batch_dev = {k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()}
     
@@ -126,7 +134,8 @@ def live_predict():
     
     mask_tensor = torch.tensor([[mask_gaze, mask_hw, mask_speech, mask_draw, mask_eeg]], dtype=torch.bool, device=device)
     
-    loader = get_dataloader(split='Test', batch_size=1)
+    data_dir = os.path.join(REPO_ROOT, 'data/raw/Gambo')
+    loader = get_dataloader(root_dir=data_dir, split='Test', batch_size=1)
     batch = next(iter(loader))
     
     # Override scalar batch features with interactive slider values

@@ -1,3 +1,7 @@
+# ============================================================
+# NeuroLens — .gitignore
+# ============================================================
+
 # Virtual Environment
 venv/
 env/
@@ -8,11 +12,18 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.egg-info/
+dist/
+build/
+*.egg
 
 # OS & IDE Files
 .DS_Store
 .vscode/
 .idea/
+*.swp
+*.swo
+Thumbs.db
 
 # Archive & Temporary Extraction Files
 unrar/
@@ -22,3 +33,32 @@ unrarsrc.tar.gz
 # Temporary & Log Files
 *.log
 .system_generated/
+
+# ⚠️  LARGE DATA FILES — never commit to GitHub (>100 MB limit)
+# Research audit cache & outputs
+audit/
+# Raw dataset RAR
+Dataset\ Dyslexia_Password\ WanAsy321.rar
+# Raw image folder (208k images)
+data/raw/
+
+# Dataset password file
+Dataset*.rar
+
+# Secrets & Keys (NEVER commit)
+.env
+.env.*
+secrets.yaml
+secrets.json
+*.pem
+*.key
+
+# Jupyter notebooks output & checkpoints
+.ipynb_checkpoints/
+*.ipynb
+
+# ONNX exported models (large)
+*.onnx
+
+# macOS metadata
+**/.DS_Store
