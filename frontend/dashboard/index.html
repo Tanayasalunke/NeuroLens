@@ -285,11 +285,15 @@ body {
 .clinician-section { display: none; }
 body.clinician-mode .clinician-section { display: block; }
 
-/* ── MOBILE ── */
+/* ── MOBILE & RESPONSIVENESS ── */
 @media (max-width: 800px) {
-  .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+  }
   .sidebar.open { transform: translateX(0); }
-  .main { margin-left: 0; padding: 1rem; }
+  .main { margin-left: 0; padding: 1.2rem; }
   .two-col, .stat-grid, .risk-grid, .conf-grid, .dp-grid, .slider-grid { grid-template-columns: 1fr; }
   .res-grid { grid-template-columns: 1fr 1fr; }
   .topnav .nav-center { display: none; }
@@ -297,8 +301,20 @@ body.clinician-mode .clinician-section { display: block; }
 }
 .hamburger {
   display: none; background: none; border: none; cursor: pointer;
-  flex-direction: column; gap: 4px; padding: 0.3rem;
+  flex-direction: column; justify-content: center; gap: 4px; padding: 0.4rem;
+  width: 36px; height: 36px; border-radius: 6px;
 }
+.hamburger:hover { background: var(--gray-100); }
+.hamburger span {
+  display: block; width: 20px; height: 2px; background: var(--gray-700);
+  border-radius: 2px; transition: all 0.2s;
+}
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px);
+  z-index: 95;
+}
+.sidebar-overlay.open { display: block; }
 /* ── LIVE DIAGNOSTIC LAB ── */
 .lab-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem; }
 .sample-card {
@@ -377,30 +393,33 @@ body.clinician-mode .clinician-section { display: block; }
   </div>
 </nav>
 
+<!-- BACKDROP OVERLAY FOR MOBILE -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-section">
     <div class="sidebar-section-title">Assessment</div>
-    <button class="nav-link active" onclick="scrollTo('section-patient')"><span class="icon">👤</span> Patient Profile</button>
-    <button class="nav-link" onclick="scrollTo('section-lab')">    <span class="icon">🧪</span> Live Diagnostic Lab</button>
-    <button class="nav-link" onclick="scrollTo('section-risk')">    <span class="icon">🎯</span> Risk Profile</button>
-    <button class="nav-link" onclick="scrollTo('section-shap')">    <span class="icon">📊</span> Explainability (SHAP)</button>
-    <button class="nav-link" onclick="scrollTo('section-forecast')"><span class="icon">📈</span> 6-Month Forecast</button>
-    <button class="nav-link" onclick="scrollTo('section-conformal')"><span class="icon">🛡</span> Conformal Decision</button>
-    <button class="nav-link" onclick="scrollTo('section-narrative')"><span class="icon">📝</span> AI Report</button>
+    <button class="nav-link active" onclick="navigateToSection('section-patient')"><span class="icon">👤</span> Patient Profile</button>
+    <button class="nav-link" onclick="navigateToSection('section-lab')">    <span class="icon">🧪</span> Live Diagnostic Lab</button>
+    <button class="nav-link" onclick="navigateToSection('section-risk')">    <span class="icon">🎯</span> Risk Profile</button>
+    <button class="nav-link" onclick="navigateToSection('section-shap')">    <span class="icon">📊</span> Explainability (SHAP)</button>
+    <button class="nav-link" onclick="navigateToSection('section-forecast')"><span class="icon">📈</span> 6-Month Forecast</button>
+    <button class="nav-link" onclick="navigateToSection('section-conformal')"><span class="icon">🛡</span> Conformal Decision</button>
+    <button class="nav-link" onclick="navigateToSection('section-narrative')"><span class="icon">📝</span> AI Report</button>
     <a href="games/index.html" target="_blank" class="nav-link" style="margin-top:0.3rem;"><span class="icon">🎮</span> Mini-Games <span class="mode-tag" style="background:#D1FAE5;color:#065F46;">Launch</span></a>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-section-title">Tools</div>
-    <button class="nav-link clinician-section" onclick="scrollTo('section-sandbox')">
+    <button class="nav-link clinician-section" onclick="navigateToSection('section-sandbox')">
       <span class="icon">🎛</span> Live Sandbox
       <span class="mode-tag">Clinician</span>
     </button>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-section-title">Research</div>
-    <button class="nav-link" onclick="scrollTo('section-dp')">      <span class="icon">🔒</span> Privacy (DP-FedAvg)</button>
-    <button class="nav-link" onclick="scrollTo('section-results')"> <span class="icon">🏆</span> Training Results</button>
+    <button class="nav-link" onclick="navigateToSection('section-dp')">      <span class="icon">🔒</span> Privacy (DP-FedAvg)</button>
+    <button class="nav-link" onclick="navigateToSection('section-results')"> <span class="icon">🏆</span> Training Results</button>
   </div>
   <div class="sidebar-section" style="border-top:1px solid var(--gray-200); padding-top:1rem; margin-top:0.5rem;">
     <div class="sidebar-section-title">Session</div>
@@ -899,15 +918,54 @@ if (role === 'clinician' || role === 'admin') {
 }
 document.getElementById('sidebar-role').textContent = role.charAt(0).toUpperCase() + role.slice(1);
 
-// ── SIDEBAR ──
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+// ── SIDEBAR & NAVIGATION ──
+function toggleSidebar(forceState) {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  const isOpen = typeof forceState === 'boolean' ? forceState : !sb.classList.contains('open');
+  if (sb) sb.classList.toggle('open', isOpen);
+  if (ov) ov.classList.toggle('open', isOpen);
 }
-function scrollTo(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  document.querySelectorAll('.nav-link').forEach(l => {
-    if (l.getAttribute('onclick') && l.getAttribute('onclick').includes(id)) l.classList.add('active');
+
+function navigateToSection(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.sidebar .nav-link').forEach(l => {
+      const target = l.getAttribute('onclick');
+      if (target && target.includes(id)) l.classList.add('active');
+    });
+  }
+  if (window.innerWidth <= 800) {
+    toggleSidebar(false);
+  }
+}
+
+// Dynamic Scroll Spy for Sidebar
+if ('IntersectionObserver' in window) {
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        document.querySelectorAll('.sidebar .nav-link').forEach(l => {
+          const target = l.getAttribute('onclick');
+          if (target && target.includes(`'${id}'`)) {
+            l.classList.add('active');
+          } else if (target && target.includes('navigateToSection')) {
+            l.classList.remove('active');
+          }
+        });
+      }
+    });
+  }, {
+    root: null,
+    rootMargin: '-20% 0px -65% 0px',
+    threshold: 0
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('section[id]').forEach(sec => sectionObserver.observe(sec));
   });
 }
 
