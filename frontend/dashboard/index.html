@@ -415,10 +415,15 @@ body.clinician-mode .clinician-section { display: block; }
 <!-- MAIN -->
 <main class="main">
 
-  <!-- Offline banner -->
-  <div class="offline-banner" id="offline-banner">
-    ⚠️ <strong>Flask API server offline</strong> — showing demo data.
-    To enable live model inference: <code>source venv/bin/activate && python frontend/dashboard/api_server.py</code>
+  <!-- Live Game Biometrics Notification Banner -->
+  <div id="game-banner" style="display:none; background:var(--green-l); border:1px solid #A7F3D0; border-radius:10px; padding:0.9rem 1.4rem; font-size:0.84rem; color:#065F46; margin-bottom:1.5rem; align-items:center; justify-content:space-between; gap:1rem;">
+    <div>
+      <span style="font-size:1.2rem; margin-right:0.4rem;">🎮</span>
+      <strong>Live Biometrics Imported from Mini-Games:</strong>
+      <span id="game-banner-details">Reaction Time: 420ms | Reversals: 1 | Tremor: 0.38 | Pause: 0.22</span>
+      &nbsp;— PyTorch forward pass re-computed!
+    </div>
+    <button onclick="document.getElementById('game-banner').style.display='none'" style="background:none; border:none; color:#065F46; font-weight:700; cursor:pointer;">✕</button>
   </div>
 
   <!-- ① PATIENT PROFILE -->
@@ -1254,6 +1259,11 @@ async function runLiveSampleEvaluation() {
 window.onload = async () => {
   initDrawPad();
   loadSamplePresets();
+
+  // Check if returning from mini-games
+  const fromGame = params.get('from_game');
+  const savedBio = localStorage.getItem('neuroLensLiveBiometrics');
+
   try {
     const res  = await fetch('http://localhost:5001/api/child_profile');
     const data = await res.json();
@@ -1265,8 +1275,27 @@ window.onload = async () => {
     document.getElementById('api-badge-text').textContent = 'API Live';
   } catch {
     renderCharts(STATIC);
-    document.getElementById('offline-banner').classList.add('show');
     document.getElementById('api-badge-text').textContent = 'API Offline — Demo Data';
+  }
+
+  // Apply mini-game biometrics if present
+  if (fromGame && savedBio) {
+    try {
+      const bio = JSON.parse(savedBio);
+      const bEl = document.getElementById('game-banner');
+      if (bEl) {
+        bEl.style.display = 'flex';
+        document.getElementById('game-banner-details').textContent =
+          `Reaction Latency: ${bio.reactionTime}ms · Reversal Errors: ${bio.reversalErrors} · Tremor: ${bio.penTremor} · Pause: ${bio.pauseRatio}`;
+      }
+      if (bio.riskScores) {
+        applyResult(bio.riskScores, bio.severityIndices);
+      }
+      if (bio.liveNarrative) {
+        document.getElementById('narrative-text').textContent = bio.liveNarrative;
+      }
+      document.getElementById('section-risk').scrollIntoView({ behavior: 'smooth' });
+    } catch(e) {}
   }
 };
 </script>
