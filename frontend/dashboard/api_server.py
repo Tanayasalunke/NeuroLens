@@ -52,6 +52,10 @@ shap_explainer = TabularFeatureImportanceExplainer()
 attn_viz = CrossModalAttentionVisualizer()
 nlg = LLMNarrativeGenerator()
 
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({"status": "healthy", "model": "NeuroLens MultiModal PyTorch", "port": 5001})
+
 @app.route('/api/child_profile', methods=['GET'])
 def get_child_profile():
     data_dir = os.path.join(REPO_ROOT, 'data/raw/Gambo')

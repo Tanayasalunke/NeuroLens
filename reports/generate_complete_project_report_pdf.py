@@ -231,9 +231,11 @@ def build_pdf():
     story.append(HRFlowable(width="100%", thickness=1.5, color=PRIMARY_BLUE, spaceBefore=2, spaceAfter=10))
     
     project_info = (
-        "<b>Academic Year:</b> 2025–2026 &nbsp;&nbsp;|&nbsp;&nbsp; <b>Degree:</b> Bachelor of Engineering in Information Technology<br/>"
-        "<b>Project Team Members:</b> Roll No. 23101A0074, Roll No. 23101A0065, Roll No. 23101A0060<br/>"
+        "<b>Academic Year:</b> 2025–2026 &nbsp;&nbsp;|&nbsp;&nbsp; <b>Degree:</b> B.Tech in Information Technology<br/>"
+        "<b>Institution:</b> Vidyalankar Institute of Technology (VIT), Wadala(E), Mumbai (University of Mumbai)<br/>"
         "<b>Department:</b> Department of Information Technology<br/>"
+        "<b>Project Team:</b> Rishabh Hegde (23101A0065), Tanaya Salunke (23101A0074), Pritraj Chaudhary (23101A0060)<br/>"
+        "<b>Project Supervisor:</b> Dr. Sushopti Gawade<br/>"
         "<b>Technologies Used:</b> Python 3.10, PyTorch, TorchVision, OpenCV, Flask, Web Audio API, WebGaze.js, HTML5 Canvas<br/>"
         "<b>Source Code Repository:</b> https://github.com/Tanayasalunke/NeuroLens"
     )
@@ -682,8 +684,8 @@ def build_pdf():
     story.append(Spacer(1, 20))
     
     sig_data = [
-        [Paragraph("<b>Student Team Members:</b><br/>Roll Nos: 23101A0074, 23101A0065, 23101A0060", body_style),
-         Paragraph("<b>Project Guide:</b><br/>Department of Information Technology", body_style)]
+        [Paragraph("<b>Student Team Members:</b><br/>Rishabh Hegde (23101A0065)<br/>Tanaya Salunke (23101A0074)<br/>Pritraj Chaudhary (23101A0060)", body_style),
+         Paragraph("<b>Project Supervisor:</b><br/>Dr. Sushopti Gawade<br/>Department of Information Technology<br/>Vidyalankar Institute of Technology", body_style)]
     ]
     t_sig = Table(sig_data, colWidths=[270, 270])
     t_sig.setStyle(TableStyle([
